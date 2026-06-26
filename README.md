@@ -97,7 +97,12 @@ Docflow-AI/
 ##  Contributing
 
 Contributions, issues, and feature requests are welcome! Feel free to open an issue or submit a pull request.
+## Note:
+The live demo may occasionally be unavailable because it relies on the Google Gemini API under the free-tier quota. If the API quota is exhausted or the API key has been disabled, the deployed application will not generate responses.
 
-## 📄 License
+You can run the project locally by adding your own GOOGLE_API_KEY to a .env file and following the setup instructions.
+##  License
 
 This project does not currently specify a license. Add a `LICENSE` file to clarify usage terms.
+## Demo link
+https://docflow-ai-617g.onrender.com/
