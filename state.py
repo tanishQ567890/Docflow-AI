@@ -10,7 +10,7 @@ class AgentState(TypedDict):
 
     question: str
 
-    route: Literal["RAG", "TOOL", "DIRECT"]
+    route: Literal["RAG", "TOOL", "WEB", "CODE", "DIRECT"]
 
     context: str
 

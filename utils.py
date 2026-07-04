@@ -35,6 +35,9 @@ def format_sources(docs):
             "source",
             "Unknown"
         )
+        if source != "Unknown":
+            from pathlib import Path
+            source = Path(source).name
 
         page = doc.metadata.get(
             "page",
@@ -42,9 +45,7 @@ def format_sources(docs):
         )
 
         output.append(
-
             f"{source} (Page {page})"
-
         )
 
     return "\n".join(

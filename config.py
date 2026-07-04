@@ -8,6 +8,11 @@ if GOOGLE_API_KEY is None:
 
 print("Google API Key loaded successfully!")
 
+TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
+
+if TAVILY_API_KEY is None:
+    raise ValueError("Tavily API Key not found.")
+
 MODEL_NAME = "gemini-2.5-flash"
 DATA_FOLDER = "data"
 

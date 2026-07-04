@@ -15,10 +15,12 @@ vectordb/
 
 # Logs
 logs/
+Logs/
 *.log
 
 # Uploaded Files
 uploads/
+images/
 
 # IDE
 .vscode/
@@ -30,3 +32,6 @@ uploads/
 # OS
 .DS_Store
 Thumbs.db
+
+# Data folder
+data/

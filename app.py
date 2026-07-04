@@ -22,20 +22,23 @@ if "messages" not in st.session_state:
 st.title("🤖DocFlow AI")
 with st.sidebar:
     st.header("Settings")
-    uploaded_pdf = st.file_uploader("Upload PDF",type="pdf")
+    uploaded_file = st.file_uploader(
+        "Upload Document",
+        type=["pdf", "docx", "txt", "csv", "pptx"]
+    )
     st.divider()
     if st.button("🗑 Clear Chat"):
         st.session_state.messages=[]
         st.rerun()
-    if uploaded_pdf:
-        if st.session_state.get("last_uploaded") != uploaded_pdf.name:
-            with st.spinner("Indexing PDF..."):
-                success, message = upload_pdf(uploaded_pdf)
+    if uploaded_file:
+        if st.session_state.get("last_uploaded") != uploaded_file.name:
+            with st.spinner("Indexing document..."):
+                success, message = upload_pdf(uploaded_file)
             if success:
-                st.session_state.last_uploaded = uploaded_pdf.name
+                st.session_state.last_uploaded = uploaded_file.name
                 st.session_state.messages.append({
                     "role": "assistant",
-                    "content": f" **System:** Successfully indexed `{uploaded_pdf.name}` ({message} chunks)."
+                    "content": f" **System:** Successfully indexed `{uploaded_file.name}` ({message} chunks)."
                 })
                 st.toast(f" Indexed {message} chunks successfully!")
                 st.rerun()

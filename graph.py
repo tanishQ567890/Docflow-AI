@@ -18,6 +18,12 @@ def decide_next_node(state):
     elif route == "TOOL":
         return "chatbot"
 
+    elif route == "WEB":
+        return "chatbot"
+
+    elif route == "CODE":
+        return "chatbot"
+
     else:
         return "chatbot"
 
