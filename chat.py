@@ -10,51 +10,12 @@ DEFAULT_THREAD = "default_user"
 
 def chat(question, thread_id=DEFAULT_THREAD):
 
-    config = {
-
-        "configurable": {
-
-            "thread_id": thread_id
-
-        }
-
-    }
-
+    config = {"configurable": {"thread_id": thread_id}}
     try:
+        result = graph.invoke({"messages": [HumanMessage(content=question)]},config=config)
+        response = extract_text(result["messages"][-1])
 
-        result = graph.invoke(
-
-            {
-
-                "messages": [
-
-                    HumanMessage(
-
-                        content=question
-
-                    )
-
-                ]
-
-            },
-
-            config=config
-
-        )
-
-        response = extract_text(
-
-            result["messages"][-1]
-
-        )
-
-        sources = result.get(
-
-            "retrieved_docs",
-
-            []
-
-        )
+        sources = result.get("retrieved_docs",[])
 
         return {
     "answer": response,
@@ -67,83 +28,38 @@ def chat(question, thread_id=DEFAULT_THREAD):
         logger.exception(e)
 
         return {
-
             "answer": str(e),
-
             "sources": []
-
         }
 
 def stream_chat(question, thread_id=DEFAULT_THREAD):
 
-    config = {
-
-        "configurable": {
-
-            "thread_id": thread_id
-
-        }
-
-    }
+    config = {"configurable": {"thread_id": thread_id}}
 
     try:
 
-        for event in graph.stream(
-
-            {
-
-                "messages": [
-
-                    HumanMessage(
-
-                        content=question
-
-                    )
-
-                ]
-
-            },
-
-            config=config
-
-        ):
-
+        for event in graph.stream({"messages": [HumanMessage(content=question)]},config=config):
             yield event
-
     except Exception as e:
-
         logger.exception(e)
-
         yield {
-
             "error": str(e)
-
         }
 
 def ask(question):
 
     result = chat(question)
-
     return result["answer"]
 
 def upload_pdf(uploaded_file):
 
     try:
-
-        path = save_uploaded_pdf(
-
-            uploaded_file
-
-        )
-
+        path = save_uploaded_pdf(uploaded_file)
         chunks = index_new_pdf(path)
-
         return True, chunks
 
     except Exception as e:
-
         logger.exception(e)
-
         return False, str(e)
 
 def stream_answer(question, context="", thread_id=DEFAULT_THREAD):
@@ -159,15 +75,10 @@ Context:
 """
 
     messages = [
-
         SystemMessage(content=system_prompt),
-
         HumanMessage(content=question)
-
     ]
 
     for chunk in stream_response(messages):
-
         if chunk.content:
-
             yield chunk.content

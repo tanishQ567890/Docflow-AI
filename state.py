@@ -7,13 +7,8 @@ from langchain_core.documents import Document
 
 class AgentState(TypedDict):
     messages: Annotated[list, add_messages]
-
     question: str
-
     route: Literal["RAG", "TOOL", "WEB", "CODE", "DIRECT"]
-
     context: str
-
     retrieved_docs: list[Document]
-
     tool_output: str

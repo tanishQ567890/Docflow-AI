@@ -6,14 +6,10 @@ from config import MODEL_NAME
 from rag import retrieve_documents
 from langchain_core.messages import HumanMessage
 from logger import logger
-
 llm = ChatGoogleGenerativeAI(model=MODEL_NAME,temperature=0.3,streaming=True)
-
 #Tool binding
 llm_with_tools = llm.bind_tools(TOOLS)
-
 # Chatbot node
-
 def chatbot(state):
 
     context = state.get("context", "")
