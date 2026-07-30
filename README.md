@@ -104,5 +104,4 @@ You can run the project locally by adding your own GOOGLE_API_KEY to a .env file
 ##  License
 
 This project does not currently specify a license. Add a `LICENSE` file to clarify usage terms.
-## Demo link
-https://docflow-ai-617g.onrender.com/
+<img width="1883" height="885" alt="Screenshot 2026-07-30 232620" src="https://github.com/user-attachments/assets/9bd422bb-d308-44d1-834b-e11b71fc7507" />
