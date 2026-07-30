@@ -19,16 +19,20 @@ DIRECT
 
 Rules:
 
-Return TOOL if the user is asking for:
-- calculations
-- current time
-- date
-- mathematical expressions
-- summarizing a PDF
-- explaining diagrams or figures in a PDF
+Return RAG if the user is asking about content INSIDE the uploaded document:
+- what is this file about
+- what does this document say
+- explain chapter 3
+- what are the key points
+- find information in the document
+- anything about the document's content
 
-Return RAG if the answer should come from the uploaded PDF
-(e.g., explain a chapter, find information in the document).
+Return TOOL if the user asks for an action ON the document or a utility task:
+- summarize the PDF (generate a full summary)
+- explain diagrams or figures in the PDF
+- calculations or math
+- current time or date
+- mathematical expressions
 
 Return WEB if user asks about:
 - latest news or today's news
@@ -67,6 +71,12 @@ TOOL
 
 User: Explain the diagram in the PDF
 TOOL
+
+User: What is this file about?
+RAG
+
+User: What does this document say?
+RAG
 
 User: What is Chapter 3 about?
 RAG

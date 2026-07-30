@@ -13,37 +13,64 @@ llm_with_tools = llm.bind_tools(TOOLS)
 def chatbot(state):
 
     context = state.get("context", "")
+    route = state.get("route", "DIRECT")
 
-    system_prompt = f"""
+    # Build route-specific system instructions
+    if route == "RAG":
+        system_prompt = f"""You are a helpful AI assistant that answers questions about uploaded documents.
 
-You are a helpful AI assistant.
+The user has uploaded a document. Use the context below to answer their question accurately and in detail.
+If the context doesn't contain enough information, say so clearly.
 
-Answer using the provided context.
-
-If the answer is not in the context,
-
-you may answer from your own knowledge.
-
-Context:
-
+Document Context:
 {context}
-
 """
 
-    messages = [
+    elif route == "TOOL":
+        system_prompt = """You are a helpful AI assistant with access to tools.
 
-        SystemMessage(content=system_prompt)
+You MUST use the appropriate tool to answer the user's question. Do NOT answer directly without calling a tool.
 
-    ] + state["messages"]
+Available tools:
+- calculator: for math expressions and calculations
+- current_time: for current date and time
+- summarize_pdf: to summarize the uploaded document (use for questions like "what is this file about", "summarize this", "give overview")
+- explain_diagram: to explain charts, figures, diagrams in the PDF
+- web_search: for real-time web information
+- code_generator: for writing, debugging or explaining code
+
+Always call the most relevant tool based on the user's request.
+"""
+
+    elif route == "WEB":
+        system_prompt = """You are a helpful AI research assistant.
+
+You MUST use the web_search tool to find current, up-to-date information for the user.
+Do NOT answer from memory — always search the web first.
+"""
+
+    elif route == "CODE":
+        system_prompt = """You are an expert software engineer assistant.
+
+You MUST use the code_generator tool to handle the user's coding request.
+The tool will generate, explain, debug or optimize code as needed.
+"""
+
+    else:  # DIRECT
+        system_prompt = """You are a helpful, knowledgeable AI assistant.
+
+Answer the user's question clearly and in detail using your own knowledge.
+Be conversational, accurate and thorough.
+"""
+
+    messages = [SystemMessage(content=system_prompt)] + state["messages"]
 
     response = llm_with_tools.invoke(messages)
 
-    logger.info("LLM generated response.")
+    logger.info(f"LLM generated response for route: {route}")
 
     return {
-
-        "messages":[response]
-
+        "messages": [response]
     }
 
 def stream_response(messages):
@@ -69,18 +96,19 @@ def retrieve(state):
                 block.get("text", "") for block in question if isinstance(block, dict)
             )
 
-    docs = retrieve_documents(question)
-
-    logger.info(f"Retrieved {len(docs)} documents.")
-
-    context = "\n\n".join(
-        doc.page_content
-        for doc in docs
-    )
-
-    return {
-        "context": context,
-        "retrieved_docs": docs
-    }
+    try:
+        docs = retrieve_documents(question)
+        logger.info(f"Retrieved {len(docs)} documents.")
+        context = "\n\n".join(doc.page_content for doc in docs)
+        return {
+            "context": context,
+            "retrieved_docs": docs
+        }
+    except Exception as e:
+        logger.warning(f"Retrieval failed (no index yet?): {e}")
+        return {
+            "context": "No document has been uploaded and indexed yet. Please upload a document first.",
+            "retrieved_docs": []
+        }
 
 tool_node = ToolNode(TOOLS)

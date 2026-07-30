@@ -6,7 +6,6 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 if GOOGLE_API_KEY is None:
     raise ValueError("Please provide the Google API Key")
 
-print("Google API Key loaded successfully!")
 
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
 

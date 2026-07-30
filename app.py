@@ -65,9 +65,10 @@ if prompt:
             start = time.time()
             placeholder = st.empty()
 
-            result = chat(prompt,thread_id=st.session_state.thread_id)
-            answer=result["answer"]
-            sources=result["sources"]
+            result = chat(prompt, thread_id=st.session_state.thread_id)
+            answer = result.get("answer") or "Sorry, I encountered an error. Please try again."
+            sources = result.get("sources", [])
+
             
             for i in range(0, len(answer), 4):
                 placeholder.markdown(answer[:i+4] + "▌")

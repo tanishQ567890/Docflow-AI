@@ -8,6 +8,8 @@ from tavily import TavilyClient
 from config import TAVILY_API_KEY
 from config import MODEL_NAME
 import base64
+import ast
+import operator
 
 llm = ChatGoogleGenerativeAI(model=MODEL_NAME, temperature=0.3)
 tavily = TavilyClient(api_key=TAVILY_API_KEY)
@@ -25,11 +27,40 @@ def calculator(expression: str):
     """
     Evaluate a mathematical expression.
     """
+    # Safe evaluator using AST — avoids the security risks of eval()
+    _OPERATORS = {
+        ast.Add: operator.add,
+        ast.Sub: operator.sub,
+        ast.Mult: operator.mul,
+        ast.Div: operator.truediv,
+        ast.Pow: operator.pow,
+        ast.USub: operator.neg,
+        ast.Mod: operator.mod,
+        ast.FloorDiv: operator.floordiv,
+    }
+
+    def _safe_eval(node):
+        if isinstance(node, ast.Constant):  # numbers
+            return node.value
+        elif isinstance(node, ast.BinOp):
+            op = _OPERATORS.get(type(node.op))
+            if op is None:
+                raise ValueError(f"Unsupported operator: {type(node.op).__name__}")
+            return op(_safe_eval(node.left), _safe_eval(node.right))
+        elif isinstance(node, ast.UnaryOp):
+            op = _OPERATORS.get(type(node.op))
+            if op is None:
+                raise ValueError(f"Unsupported operator: {type(node.op).__name__}")
+            return op(_safe_eval(node.operand))
+        else:
+            raise ValueError(f"Unsupported expression type: {type(node).__name__}")
+
     try:
-        result = eval(expression)
+        tree = ast.parse(expression, mode="eval")
+        result = _safe_eval(tree.body)
         return str(result)
     except Exception as e:
-        return str(e)
+        return f"Error evaluating expression: {e}"
 
 @tool
 def summarize_pdf(summary_type: str = "short summary") -> str:
@@ -43,8 +74,12 @@ def summarize_pdf(summary_type: str = "short summary") -> str:
     - executive summary
     - technical summary
     """
-
-    docs = load_pdf()
+    try:
+        docs = load_pdf()
+    except FileNotFoundError:
+        return "No document has been uploaded yet. Please upload a PDF or document first."
+    except Exception as e:
+        return f"Failed to load the document: {e}"
 
     document = "\n\n".join(
         doc.page_content for doc in docs
@@ -74,8 +109,10 @@ def explain_diagram(question: str) -> str:
     architecture diagrams and flowcharts present
     in uploaded PDFs.
     """
-
-    images = extract_images()
+    try:
+        images = extract_images()
+    except Exception as e:
+        return f"Failed to extract images from the document: {e}"
 
     if len(images) == 0:
         return (
