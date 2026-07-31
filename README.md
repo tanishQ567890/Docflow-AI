@@ -1,3 +1,4 @@
+<img width="1883" height="885" alt="Screenshot 2026-07-30 232620" src="https://github.com/user-attachments/assets/5b7b4971-c824-431a-b0b8-18d1a7c850be" />
 #  DocFlow AI
 
 **An Intelligent Knowledge Engine powered by LangGraph, Google Gemini, FAISS, and Streamlit.**
