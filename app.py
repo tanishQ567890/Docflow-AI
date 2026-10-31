@@ -344,8 +344,7 @@ with st.sidebar:
     )
     if uploaded_file and st.session_state.get("last_uploaded") == hashlib.sha256(uploaded_file.getvalue()).hexdigest():
         st.markdown(
-            f'<div class="document-card"><strong>✓ Document ready</strong>{escape(uploaded_file.name)}<br>'
-            f'{st.session_state.get("indexed_chunks", 0)} searchable chunks</div>',
+            f'<div class="document-card"><strong>✓ Document ready</strong>{escape(uploaded_file.name)}<br>',
             unsafe_allow_html=True,
         )
 
