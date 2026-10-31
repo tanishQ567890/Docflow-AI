@@ -19,15 +19,23 @@ DIRECT
 
 Rules:
 
-Return RAG if the user is asking about content INSIDE the uploaded document:
-- what is this file about
-- what does this document say
-- explain chapter 3
-- what are the key points
-- find information in the document
-- anything about the document's content
+Return RAG if the user is asking about SPECIFIC details or content INSIDE the uploaded document:
+- what does section 3 say
+- find the name of the applicant
+- what are the terms and conditions
+- what date is mentioned in the document
+- find specific facts, fields, names, or numbers from the document
+- anything requiring precise lookup in the document
 
-Return TOOL if the user asks for an action ON the document or a utility task:
+Return TOOL if the user asks for a HIGH-LEVEL overview, summary, or action ON the document, or a utility task:
+- what is this document about
+- what is this file about
+- give me a summary
+- summarize this
+- what is this doc
+- overview of the document
+- what does this document contain
+- explain what this file is
 - summarize the PDF (generate a full summary)
 - explain diagrams or figures in the PDF
 - calculations or math
@@ -73,9 +81,21 @@ User: Explain the diagram in the PDF
 TOOL
 
 User: What is this file about?
-RAG
+TOOL
+
+User: What is this document about?
+TOOL
+
+User: Give me an overview
+TOOL
 
 User: What does this document say?
+TOOL
+
+User: What does section 3 say?
+RAG
+
+User: Find the applicant's name
 RAG
 
 User: What is Chapter 3 about?

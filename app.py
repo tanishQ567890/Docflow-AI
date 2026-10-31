@@ -366,11 +366,7 @@ with st.sidebar:
             if success:
                 st.session_state.last_uploaded = upload_hash
                 st.session_state.indexed_chunks = message
-                st.session_state.messages.append({
-                    "role": "assistant",
-                    "content": f"Your document is ready with {message} searchable chunks. Ask me anything about it."
-                })
-                st.toast(f"Indexed {message} chunks successfully!")
+                st.toast(f"✅ Document indexed successfully! Ask me anything about it.")
                 st.rerun()
             else:
                 st.error(message)
