@@ -4,7 +4,6 @@ from langchain_core.messages import SystemMessage
 from tool import TOOLS
 from config import MODEL_NAME
 from rag import retrieve_documents
-from langchain_core.messages import HumanMessage
 from logger import logger
 llm = ChatGoogleGenerativeAI(model=MODEL_NAME,temperature=0.3,streaming=True)
 #Tool binding
@@ -96,19 +95,12 @@ def retrieve(state):
                 block.get("text", "") for block in question if isinstance(block, dict)
             )
 
-    try:
-        docs = retrieve_documents(question)
-        logger.info(f"Retrieved {len(docs)} documents.")
-        context = "\n\n".join(doc.page_content for doc in docs)
-        return {
-            "context": context,
-            "retrieved_docs": docs
-        }
-    except Exception as e:
-        logger.warning(f"Retrieval failed (no index yet?): {e}")
-        return {
-            "context": "No document has been uploaded and indexed yet. Please upload a document first.",
-            "retrieved_docs": []
-        }
+    docs = retrieve_documents(question)
+    logger.info(f"Retrieved {len(docs)} documents.")
+    context = "\n\n".join(doc.page_content for doc in docs)
+    return {
+        "context": context,
+        "retrieved_docs": docs
+    }
 
 tool_node = ToolNode(TOOLS)

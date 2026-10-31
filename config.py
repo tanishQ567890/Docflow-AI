@@ -1,21 +1,18 @@
 import os
+from pathlib import Path
+
 from dotenv import load_dotenv
-load_dotenv()
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY") 
 
-if GOOGLE_API_KEY is None:
-    raise ValueError("Please provide the Google API Key")
+PROJECT_ROOT = Path(__file__).resolve().parent
+load_dotenv(PROJECT_ROOT / ".env")
 
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+if not GOOGLE_API_KEY:
+    raise ValueError("Please set GOOGLE_API_KEY in the project .env file.")
 
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
 
-if TAVILY_API_KEY is None:
-    raise ValueError("Tavily API Key not found.")
-
 MODEL_NAME = "gemini-2.5-flash"
-DATA_FOLDER = "data"
-
-UPLOAD_FOLDER = "uploads"
-
-LOG_FOLDER = "Logs"
-
+DATA_FOLDER = PROJECT_ROOT / "data"
+UPLOAD_FOLDER = PROJECT_ROOT / "uploads"
+LOG_FOLDER = PROJECT_ROOT / "Logs"

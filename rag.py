@@ -3,10 +3,10 @@ from langchain_community.document_loaders import (PyPDFLoader, Docx2txtLoader, T
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores import FAISS
-from config import UPLOAD_FOLDER
+from config import PROJECT_ROOT, UPLOAD_FOLDER
 
 # Supported file extensions
-SUPPORTED_EXTENSIONS = [".pdf", ".docx", ".txt", ".csv", ".pptx"]
+SUPPORTED_EXTENSIONS = {".pdf", ".docx", ".txt", ".csv", ".pptx"}
 
 def get_loader(file_path: str):
     ext = Path(file_path).suffix.lower()
@@ -23,9 +23,9 @@ def get_loader(file_path: str):
     else:
         raise ValueError(f"Unsupported file type: {ext}")
 
-Path(UPLOAD_FOLDER).mkdir(exist_ok=True)
+UPLOAD_FOLDER.mkdir(parents=True, exist_ok=True)
 
-vector_path = "vectordb"
+vector_path = PROJECT_ROOT / "vectordb"
 
 #loading
 def load_pdf():
@@ -33,7 +33,10 @@ def load_pdf():
     upload_dir = Path(UPLOAD_FOLDER)
     uploaded_files = []
     for ext in SUPPORTED_EXTENSIONS:
-        uploaded_files.extend(upload_dir.glob(f"*{ext}"))
+        uploaded_files.extend(
+            path for path in upload_dir.iterdir()
+            if path.is_file() and path.suffix.lower() == ext
+        )
 
     uploaded_files = sorted(uploaded_files, key=lambda p: p.stat().st_mtime, reverse=True)
 
@@ -61,15 +64,28 @@ def get_embedding():
 # Retrieval
 def retrieve_documents(question: str):
     """Retrieve relevant document chunks for a question."""
+    if not vector_path.is_dir():
+        raise FileNotFoundError(
+            "No document has been indexed yet. Upload a document before asking questions about it."
+        )
+
     embedding = get_embedding()
-    db = FAISS.load_local(vector_path, embedding, allow_dangerous_deserialization=True)
+    db = FAISS.load_local(
+        str(vector_path), embedding, allow_dangerous_deserialization=True
+    )
     retriever = db.as_retriever(search_kwargs={"k": 4})
     return retriever.invoke(question)
 
 
 def save_uploaded_pdf(uploaded_file):
     """Save an uploaded file to the uploads folder."""
-    save_path = Path(UPLOAD_FOLDER) / uploaded_file.name
+    filename = Path(uploaded_file.name.replace("\\", "/")).name
+    extension = Path(filename).suffix.lower()
+    if extension not in SUPPORTED_EXTENSIONS:
+        raise ValueError(f"Unsupported file type: {extension or '(none)'}")
+
+    UPLOAD_FOLDER.mkdir(parents=True, exist_ok=True)
+    save_path = UPLOAD_FOLDER / filename
     with open(save_path, "wb") as f:
         f.write(uploaded_file.getbuffer())
     return save_path
@@ -80,7 +96,10 @@ def index_new_pdf(pdf_path):
     loader = get_loader(str(pdf_path))
     documents = loader.load()
     chunks = split_documents(documents)
+    if not chunks:
+        raise ValueError("The uploaded document contains no extractable text.")
+
     embedding = get_embedding()
     db = FAISS.from_documents(chunks, embedding)
-    db.save_local(vector_path)
+    db.save_local(str(vector_path))
     return len(chunks)

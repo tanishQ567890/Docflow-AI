@@ -5,14 +5,12 @@ from langchain_core.messages import HumanMessage
 from rag import load_pdf
 from vision import extract_images
 from tavily import TavilyClient
-from config import TAVILY_API_KEY
-from config import MODEL_NAME
+from config import MODEL_NAME, TAVILY_API_KEY
 import base64
 import ast
 import operator
 
 llm = ChatGoogleGenerativeAI(model=MODEL_NAME, temperature=0.3)
-tavily = TavilyClient(api_key=TAVILY_API_KEY)
 @tool
 def current_time():
     """
@@ -190,7 +188,10 @@ def web_search(query: str) -> str:
     """
     Search the internet for the latest information.
     """
+    if not TAVILY_API_KEY:
+        return "Web search is not configured. Set TAVILY_API_KEY in the project .env file."
 
+    tavily = TavilyClient(api_key=TAVILY_API_KEY)
     search_result = tavily.search(
 
         query=query,

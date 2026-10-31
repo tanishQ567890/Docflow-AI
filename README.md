@@ -9,11 +9,11 @@ DocFlow AI is an agentic Retrieval-Augmented Generation (RAG) chatbot that reads
 
 ##  Features
 
-- ** PDF Knowledge Base** — Upload any PDF and it gets chunked, embedded, and indexed into a FAISS vector store in seconds.
-- ** Smart Query Router** — An LLM-based router classifies every question as `RAG`, `TOOL`, or `DIRECT` and sends it down the right path of the graph.
+- **Document Knowledge Base** — Upload a PDF, DOCX, TXT, CSV, or PPTX file to chunk, embed, and index its contents in a FAISS vector store.
+- **Smart Query Router** — An LLM-based router classifies questions as `RAG`, `TOOL`, `WEB`, `CODE`, or `DIRECT`.
 - ** Retrieval-Augmented Generation** — Relevant chunks are retrieved from FAISS and injected into the LLM's context before answering.
 - ** Built-in Tools** — The agent can call a calculator or fetch the current system time when the question calls for it, instead of hallucinating an answer.
-- ** Persistent Conversation Memory** — Powered by LangGraph's `MemorySaver` checkpointer, so each chat thread remembers prior turns.
+- **Conversation Memory** — LangGraph's in-memory checkpointer keeps each chat thread's recent turns while the app is running.
 - ** Source Citations** — Every RAG-backed answer shows which document/page the information came from.
 - ** Streamlit Chat UI** — Upload a PDF, chat, clear history, and watch responses stream in, all from the browser.
 - ** CLI Mode** — A simple terminal chat loop (`test_graph.py`) for quickly testing the graph without the UI.
@@ -34,7 +34,7 @@ DocFlow AI's brain is a **LangGraph state machine**. Every incoming message flow
 4. **`tools`** (`tool.py`) — If the chatbot's response requests a tool call (e.g. `calculator`, `current_time`), LangGraph's `ToolNode` executes it and routes the result back to `chatbot` for a final answer.
 5. **Memory** (`memory.py`) — Every step is checkpointed against a `thread_id`, so the same conversation can be resumed with full history.
 
-This design means DocFlow AI never blindly forces every question through the PDF — general chit-chat goes straight to the LLM, math/time questions get an actual tool call, and only document-related questions pay the cost of a vector search.
+This design means DocFlow AI routes document questions through retrieval, math/time questions through tools, current-information questions through web search, coding questions through the code tool, and general conversation directly to the LLM.
 
 ---
 
@@ -44,7 +44,7 @@ This design means DocFlow AI never blindly forces every question through the PDF
 |---|---|
 | Orchestration | [LangGraph](https://www.langchain.com/langgraph) (stateful agent graph + memory checkpointing) |
 | LLM | [Google Gemini](https://ai.google.dev/) (`gemini-2.5-flash`) via `langchain-google-genai` |
-| Embeddings | Google `gemini-embedding-001` |
+| Embeddings | Google `gemini-embedding-2` |
 | Vector Store | [FAISS](https://github.com/facebookresearch/faiss) (local, in-process similarity search) |
 | Document Loading | `langchain-community` (`PyPDFLoader`) + `RecursiveCharacterTextSplitter` |
 | Frontend | [Streamlit](https://streamlit.io/) |
@@ -69,8 +69,7 @@ Docflow-AI/
 ├── test_graph.py        # CLI chat loop for testing the graph without Streamlit
 ├── tool.py              # Tool definitions (calculator, current_time)
 ├── utils.py             # Shared helpers (extract_text, format_sources)
-├── requirement.txt      # Minimal list of core dependencies
-└── requirements.txt     # Full pinned environment dependency freeze
+└── requirements.txt     # Runtime dependencies
 ```
 
 ---
@@ -79,10 +78,49 @@ Docflow-AI/
 
 ### Prerequisites
 
-- Python 3.10+
-- A [Google AI Studio](https://aistudio.google.com/) API key (for Gemini + embeddings)
+- Python 3.10 or newer
+- A [Google AI Studio](https://aistudio.google.com/) API key for Gemini and embeddings
+- A [Tavily API key](https://tavily.com/) only if you want to use web search
 
+### Install
 
+From the project directory, create a `.env` file:
+
+```dotenv
+GOOGLE_API_KEY=your_google_api_key
+TAVILY_API_KEY=your_tavily_api_key
+```
+
+`TAVILY_API_KEY` is optional. Without it, chat, document retrieval, and other tools still work; web search returns a configuration message.
+
+Create and activate a virtual environment, then install dependencies:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
+
+On Windows PowerShell, activate the environment with:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+Start the Streamlit app from the project directory:
+
+```bash
+streamlit run app.py
+```
+
+The project loads `.env` and stores uploads, the FAISS index, logs, and extracted images relative to the project directory, even when launched from another working directory.
+
+### Notes
+
+- Chat history is held in memory and is cleared when the app process restarts. The **Clear Chat** button starts a fresh conversation thread.
+- The FAISS index represents the most recently indexed document. Uploading another document replaces the searchable index.
+- A document must contain extractable text to be indexed. Image-only PDFs do not provide text for RAG.
 ---
 
 ##  Roadmap
